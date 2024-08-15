@@ -1,31 +1,47 @@
-import { Router} from "express";
-import { registerUser } from "../controllers/user.controller.js";
-import {upload} from "../middlewares/multer.middleware.js"
-import { loginUser,logoutUser ,refreshAccessToken} from "../controllers/user.controller.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+import mongoose, {Schema} from "mongoose";
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
-const router = Router()
-
-router.route("/register").post(
-    upload.fields([
-        {
-            name: "avatar",
-            maxCount: 1
-        }, 
-        {
-            name: "coverImage",
-            maxCount: 1
+const videoSchema = new Schema(
+    {
+        videoFile: {
+            type: String, //cloudinary url
+            required: true
+        },
+        thumbnail: {
+            type: String, //cloudinary url
+            required: true
+        },
+        title: {
+            type: String, 
+            required: true
+        },
+        description: {
+            type: String, 
+            required: true
+        },
+        duration: {
+            type: Number, 
+            required: true
+        },
+        views: {
+            type: Number,
+            default: 0
+        },
+        isPublished: {
+            type: Boolean,
+            default: true
+        },
+        owner: {
+            type: Schema.Types.ObjectId,
+            ref: "User"
         }
-    ]),
-    registerUser
-    )
 
-router.route("/login").post(loginUser)
+    }, 
+    {
+        timestamps: true
+    }
+)
 
-//secured routes
-router.route("/logout").post(verifyJWT,  logoutUser) 
-router.route("/refresh-token").post(refreshAccessToken)
+videoSchema.plugin(mongooseAggregatePaginate)
 
-
-
-export default router
+export const Video = mongoose.model("Video", videoSchema)
